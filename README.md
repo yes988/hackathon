@@ -104,12 +104,3 @@ Optional ADK web mode:
 adk web --adk_apps_dir .
 ```
 
-## Demo Guidance
-
-For the hackathon video:
-
-- keep the video under 150 seconds
-- set the YouTube video to Unlisted
-- show the thinking log during generation
-- trigger or describe a failed search so the fallback recovery is visible
-- show a guardrail block example if possible
