@@ -21,26 +21,53 @@ The workflow is designed for agentic research rather than a single one-shot prom
 
 ```mermaid
 flowchart LR
-	U[User Topic] --> S[Scout Agent\nSearch + Retry Recovery]
-	S --> G1[Source Guardrail\nBlacklist / Unsafe Terms]
-	G1 --> A[Analyst Agent\nFreshness + Insight Extraction]
-	A --> W[Writer Agent\nProfessional Briefing]
-	W --> G2[Final Output Guardrail]
-	G2 --> UI[Streamlit UI + Thinking Log]
+
+U[User Input<br>Research Topic]
+
+subgraph Discovery Layer
+S[Scout Agent<br>News Search + Retry Recovery]
+RC[Retry Controller<br>Exponential Backoff<br>Failure Classification]
+end
+
+subgraph Security Layer
+G1[Source Guardrail G1<br>Prompt Injection Detection<br>Blacklist Filtering<br>Capability Sandbox]
+end
+
+subgraph Intelligence Layer
+A[Analyst Agent<br>Freshness Checks<br>Insight Extraction<br>ICP Filtering]
+end
+
+subgraph Content Generation Layer
+W[Writer Agent<br>Professional Briefing<br>Structured Intelligence Report]
+end
+
+subgraph Output Safety Layer
+G2[Final Output Guardrail G2<br>PII Redaction<br>Schema Validation<br>Relevancy Checks]
+end
+
+subgraph Interface Layer
+UI[Streamlit Intelligence Dashboard]
+LOG[Thinking Log<br>Agent Semantic Telemetry]
+HITL[Human in the Loop Review]
+end
+
+U --> S
+S --> RC
+RC --> G1
+G1 --> A
+A --> W
+W --> G2
+G2 --> UI
+
+UI --> LOG
+UI --> HITL
 ```
-<img src="img\Copy of hackathon.drawio.png" width="400">
+
 
 
 The diagram source is also saved in `architecture.mmd`.
 
-## Submission Checklist Mapping
 
-- Track selection: `Track A: Intelligence Bureau` is stated explicitly in this README and in the app UI.
-- Directory structure: top-level `agents`, `tools`, and `app` folders are included for submission visibility.
-- Agentic agency: the system shows a visible thinking log with step-by-step agent activity.
-- Standard implementation: the project uses Google ADK instead of a hand-rolled orchestration framework.
-- System robustness: guardrails block blacklisted sources and offensive output, and the search layer performs retry and fallback recovery.
-- Documentation: this README includes the system architecture diagram and role descriptions.
 
 ## Agent Roles
 
@@ -51,8 +78,6 @@ The diagram source is also saved in `architecture.mmd`.
 
 ## Guardrails
 
-Guardrails are implemented in `ai-news-swarm/tools/guardrails.py`.
-
 Current checks:
 
 - Untrusted source blacklist
@@ -60,36 +85,7 @@ Current checks:
 - Early filtering during scouting
 - Final blocking before rendering the report
 
-This satisfies the hackathon requirement to demonstrate system robustness rather than only raw generation quality.
 
-## Recovery Behavior
-
-The search layer now demonstrates recovery behavior for judging:
-
-- If the initial Tavily request fails, the Scout logs the failure.
-- The system retries with fallback queries.
-- The thinking log explicitly shows messages such as `trying a fallback query` and `fallback query recovered the search flow`.
-
-## Thinking Log
-
-For the demo, the app now exposes a terminal-style thinking log that shows:
-
-- orchestration start
-- search attempts
-- fallback recovery
-- guardrail filtering
-- analysis completion
-- writer completion
-
-This is visible in the Streamlit UI and also printed when the CLI entrypoint is used.
-
-## Key Paths
-
-- Main project: `ai-news-swarm`
-- UI: `ai-news-swarm/app/streamlit_app.py`
-- Orchestrator: `ai-news-swarm/main.py`
-- Agents: `ai-news-swarm/agents`
-- Tools: `ai-news-swarm/tools`
 
 ## Run The Project
 
