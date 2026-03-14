@@ -98,14 +98,14 @@ set GOOGLE_API_KEY=your_google_api_key
 streamlit run app/streamlit_app.py
 ```
 
-## Easiest Deployment
 
-The easiest deployment path for this project is Streamlit Community Cloud.
 
-Deployment target:
+## Live Demo
 
-- App file: `ai-news-swarm/app/streamlit_app.py`
-- Required secrets: `TAVILY_API_KEY`, `GOOGLE_API_KEY`
+Streamlit app URL:
+
+- https://appappppy-ox4aw5vcehs25qsyjvfjz.streamlit.app
+
 
 
 
@@ -114,5 +114,3 @@ Optional ADK web mode:
 ```bash
 adk web --adk_apps_dir .
 ```
-
-
