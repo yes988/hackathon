@@ -25,7 +25,8 @@ NOISE_PATTERNS = [
     r"Privacy Policy Contact Us About us.*",
 ]
 
-_CORRUPTION_PATTERN = re.compile(r"(?:[A-Za-z0-9@#$%^&*\\\\/=+_-]{1,2}\s*){40,}")
+_LONG_ENCODED_RUN_PATTERN = re.compile(r"[A-Za-z0-9@#$%^&*\\\\/=+_-]{28,}")
+_SINGLE_CHAR_LINE_PATTERN = re.compile(r"^[A-Za-z0-9@#$%^&*\\\\/=+_-]$")
 
 
 def clean_news_text(text: str) -> str:
@@ -77,13 +78,29 @@ def is_low_quality_article(text: str, min_chars: int = 300) -> bool:
 
 def looks_corrupted_text(text: str) -> bool:
     """Detect heavily corrupted or encoded-looking text blocks."""
+    if not text.strip():
+        return False
+
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if lines:
+        single_char_lines = sum(1 for line in lines if _SINGLE_CHAR_LINE_PATTERN.fullmatch(line))
+        if single_char_lines >= 12 and single_char_lines / len(lines) >= 0.25:
+            return True
+
     normalized = " ".join(text.split())
-    if not normalized:
+    if _LONG_ENCODED_RUN_PATTERN.search(normalized):
         return True
 
-    if _CORRUPTION_PATTERN.search(normalized):
-        return True
+    tokens = re.findall(r"\S+", normalized)
+    if len(tokens) >= 45:
+        suspicious_tokens = 0
+        for token in tokens:
+            digit_count = sum(1 for ch in token if ch.isdigit())
+            symbol_count = sum(1 for ch in token if not ch.isalnum())
+            if digit_count >= 2 or symbol_count >= 2:
+                suspicious_tokens += 1
 
-    punctuation_count = sum(1 for ch in normalized if not ch.isalnum() and not ch.isspace())
-    ratio = punctuation_count / max(1, len(normalized))
-    return ratio > 0.18
+        if suspicious_tokens / len(tokens) >= 0.35:
+            return True
+
+    return False
