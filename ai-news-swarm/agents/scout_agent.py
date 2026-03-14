@@ -31,11 +31,7 @@ class ScoutAgent:
     )
 
     _GENERIC_TOPIC_TOKENS = {
-        "ai",
-        "artificial",
-        "intelligence",
         "unknown",
-        "case",
         "incident",
         "version",
         "latest",
@@ -45,6 +41,20 @@ class ScoutAgent:
         "development",
         "update",
         "updates",
+    }
+
+    _TRUSTED_DOMAINS = {
+        "forbes.com",
+        "fortune.com",
+        "businessinsider.com",
+        "reuters.com",
+        "bloomberg.com",
+        "cnbc.com",
+        "techcrunch.com",
+        "fintechfutures.com",
+        "wsj.com",
+        "ft.com",
+        "nytimes.com",
     }
 
     @staticmethod
@@ -76,8 +86,18 @@ class ScoutAgent:
         return {
             token
             for token in tokens
-            if len(token) >= 4 and token not in cls._GENERIC_TOPIC_TOKENS
+            if len(token) >= 3 and token not in cls._GENERIC_TOPIC_TOKENS
         }
+
+    @classmethod
+    def _is_trusted_domain(cls, domain: str) -> bool:
+        normalized = domain.lower().strip()
+        if not normalized:
+            return False
+        return any(
+            normalized == trusted or normalized.endswith(f".{trusted}")
+            for trusted in cls._TRUSTED_DOMAINS
+        )
 
     @staticmethod
     def _token_variants(token: str) -> set[str]:
@@ -172,7 +192,7 @@ class ScoutAgent:
                 "Scout: filter mode v2 enabled (topic relevance + corruption screening)."
             )
 
-        results = search_news(topic=topic, max_results=10, thinking_log=thinking_log)
+        results = search_news(topic=topic, max_results=20, thinking_log=thinking_log)
         results = self._deduplicate_articles(results, thinking_log=thinking_log)
 
         curated: list[dict[str, Any]] = []
@@ -182,6 +202,7 @@ class ScoutAgent:
             image = str(item.get("image", "")).strip()
             source = str(item.get("source", "")).strip()
             source_url = str(item.get("source_url", "")).strip()
+            domain = str(item.get("domain", "")).strip().lower()
 
             if not self._is_relevant_to_topic(title, summary, topic):
                 if thinking_log is not None:
@@ -196,16 +217,17 @@ class ScoutAgent:
                         f"Scout: possible corruption detected but kept article from source '{source or source_url or 'unknown'}' for downstream checks."
                     )
 
-            block_reason = apply_guardrails(
-                " ".join([title, source, source_url]),
-                include_offensive=False,
-            )
-            if block_reason:
-                if thinking_log is not None:
-                    thinking_log.append(
-                        f"Scout: guardrail removed article from source '{source or source_url or 'unknown'}'."
-                    )
-                continue
+            if not self._is_trusted_domain(domain):
+                block_reason = apply_guardrails(
+                    " ".join([title, source]),
+                    include_offensive=False,
+                )
+                if block_reason:
+                    if thinking_log is not None:
+                        thinking_log.append(
+                            f"Scout: guardrail removed article from source '{source or source_url or 'unknown'}'."
+                        )
+                    continue
 
             curated.append(self._to_curated_article(item))
 
@@ -228,6 +250,20 @@ class ScoutAgent:
             curated.append(self._to_curated_article(results[0]))
             if thinking_log is not None:
                 thinking_log.append("Scout: fallback activated, returning best available article.")
+
+        if len(curated) < 2 and results:
+            seen_urls = {str(article.get("SourceUrl", "")).strip().lower() for article in curated}
+            for item in results:
+                source_url = str(item.get("source_url", "")).strip().lower()
+                if source_url and source_url in seen_urls:
+                    continue
+                curated.append(self._to_curated_article(item))
+                if source_url:
+                    seen_urls.add(source_url)
+                if len(curated) >= 2:
+                    break
+            if thinking_log is not None and len(curated) >= 2:
+                thinking_log.append("Scout: minimum article fallback added additional context articles.")
 
         if thinking_log is not None:
             high_confidence = sum(1 for article in curated if article.get("Reliability") == "High")

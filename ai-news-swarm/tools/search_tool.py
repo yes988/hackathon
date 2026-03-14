@@ -193,6 +193,16 @@ def _build_query_candidates(topic: str) -> list[str]:
             ]
         )
 
+    finance_tokens = {"money", "finance", "fintech", "banking", "economy", "payments"}
+    topic_terms = set(re.findall(r"[a-zA-Z0-9]+", lowered))
+    if topic_terms & finance_tokens:
+        candidates.extend(
+            [
+                f"{normalized} finance economy fintech banking business",
+                f"{normalized} market regulation enterprise",
+            ]
+        )
+
     unique_candidates: list[str] = []
     seen: set[str] = set()
     for candidate in candidates:
