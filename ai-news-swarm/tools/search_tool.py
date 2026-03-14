@@ -48,6 +48,12 @@ def _log(thinking_log: list[str] | None, message: str) -> None:
         thinking_log.append(message)
 
 
+def _env_flag(name: str) -> bool:
+    """Return True when an environment flag is enabled."""
+    value = os.getenv(name, "").strip().lower()
+    return value in {"1", "true", "yes", "on"}
+
+
 def _clean_title(title: str) -> str:
     """Normalize title text to remove scrape artifacts while preserving meaning."""
     cleaned = clean_news_text(title)
@@ -204,9 +210,17 @@ def search_news(
 
     errors: list[str] = []
     queries = _build_query_candidates(topic)
+    demo_force_fallback = _env_flag("RECOVERY_DEMO_FORCE_FALLBACK")
 
     for attempt, query in enumerate(queries, start=1):
         _log(thinking_log, f"Scout: search attempt {attempt} using query '{query}'.")
+
+        # Deterministic demo mode: force attempt 1 to fail so fallback behavior is visible.
+        if demo_force_fallback and attempt == 1 and len(queries) > 1:
+            _log(thinking_log, "Scout: demo mode forced no results for attempt 1.")
+            _log(thinking_log, f"Scout: no results for '{query}'.")
+            _log(thinking_log, "Scout: broadening the search query.")
+            continue
 
         payload = {
             "api_key": api_key,
