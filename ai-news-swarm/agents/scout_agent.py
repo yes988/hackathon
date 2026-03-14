@@ -143,7 +143,10 @@ class ScoutAgent:
                     )
                 continue
 
-            block_reason = apply_guardrails(" ".join([title, summary, image, source, source_url]))
+            block_reason = apply_guardrails(
+                " ".join([title, summary, image, source, source_url]),
+                include_offensive=False,
+            )
             if block_reason:
                 if thinking_log is not None:
                     thinking_log.append(
