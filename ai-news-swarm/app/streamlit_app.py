@@ -80,6 +80,18 @@ if st.button("Generate Intelligence Report", type="primary"):
                 metric_col3.metric("Unique Outlets", stats.get("unique_outlets", 0))
                 metric_col4.metric("Confidence", stats.get("overall_confidence", "Low"))
 
+                article_count = int(stats.get("articles_found", len(articles)) or 0)
+                confidence = str(stats.get("overall_confidence", "Low"))
+                if article_count < 2:
+                    st.warning(
+                        "Limited trustworthy coverage: fewer than 2 relevant articles passed filtering. "
+                        "Treat this briefing as low confidence."
+                    )
+                elif confidence.lower() == "low":
+                    st.info(
+                        "Source confidence is low. Cross-check key claims with additional trusted outlets."
+                    )
+
                 if source_reliability:
                     st.caption("Source Reliability Score")
                     st.dataframe(source_reliability, use_container_width=True, hide_index=True)
