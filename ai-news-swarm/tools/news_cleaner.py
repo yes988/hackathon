@@ -91,16 +91,4 @@ def looks_corrupted_text(text: str) -> bool:
     if _LONG_ENCODED_RUN_PATTERN.search(normalized):
         return True
 
-    tokens = re.findall(r"\S+", normalized)
-    if len(tokens) >= 45:
-        suspicious_tokens = 0
-        for token in tokens:
-            digit_count = sum(1 for ch in token if ch.isdigit())
-            symbol_count = sum(1 for ch in token if not ch.isalnum())
-            if digit_count >= 2 or symbol_count >= 2:
-                suspicious_tokens += 1
-
-        if suspicious_tokens / len(tokens) >= 0.35:
-            return True
-
     return False
