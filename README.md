@@ -98,18 +98,21 @@ set GOOGLE_API_KEY=your_google_api_key
 streamlit run app/streamlit_app.py
 ```
 
+## Easiest Deployment
+
+The easiest deployment path for this project is Streamlit Community Cloud.
+
+Deployment target:
+
+- App file: `ai-news-swarm/app/streamlit_app.py`
+- Required secrets: `TAVILY_API_KEY`, `GOOGLE_API_KEY`
+
+
+
 Optional ADK web mode:
 
 ```bash
 adk web --adk_apps_dir .
 ```
 
-## Demo Guidance
 
-For the hackathon video:
-
-- keep the video under 150 seconds
-- set the YouTube video to Unlisted
-- show the thinking log during generation
-- trigger or describe a failed search so the fallback recovery is visible
-- show a guardrail block example if possible
