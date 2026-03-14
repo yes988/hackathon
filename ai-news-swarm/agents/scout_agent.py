@@ -32,6 +32,8 @@ class ScoutAgent:
 
     _GENERIC_TOPIC_TOKENS = {
         "ai",
+        "artificial",
+        "intelligence",
         "unknown",
         "case",
         "incident",
@@ -39,6 +41,10 @@ class ScoutAgent:
         "latest",
         "news",
         "report",
+        "developments",
+        "development",
+        "update",
+        "updates",
     }
 
     @staticmethod
@@ -50,6 +56,20 @@ class ScoutAgent:
         normalized = " ".join(summary.lower().split())
         return normalized[:220]
 
+    @staticmethod
+    def _to_curated_article(item: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "Title": str(item.get("title", "")).strip() or "Untitled",
+            "Summary": str(item.get("summary", "")).strip() or "No summary available.",
+            "Image": str(item.get("image", "")).strip() or "No image available.",
+            "Source": str(item.get("source", "")).strip() or "Unknown source",
+            "SourceUrl": str(item.get("source_url", "")).strip(),
+            "Domain": item.get("domain", ""),
+            "Reliability": item.get("reliability", "Low"),
+            "ReliabilityScore": item.get("reliability_score", 1),
+            "PublishedAt": item.get("published_at"),
+        }
+
     @classmethod
     def _topic_tokens(cls, topic: str) -> set[str]:
         tokens = set(re.findall(r"[a-zA-Z0-9]+", topic.lower()))
@@ -59,6 +79,27 @@ class ScoutAgent:
             if len(token) >= 4 and token not in cls._GENERIC_TOPIC_TOKENS
         }
 
+    @staticmethod
+    def _token_variants(token: str) -> set[str]:
+        variants = {token}
+        if token.endswith("s") and len(token) > 4:
+            variants.add(token[:-1])
+        if token.endswith("es") and len(token) > 5:
+            variants.add(token[:-2])
+        variants.add(f"{token}s")
+        return {item for item in variants if item}
+
+    @staticmethod
+    def _mentions_ai(text: str) -> bool:
+        lowered = text.lower()
+        return (
+            " ai " in f" {lowered} "
+            or "artificial intelligence" in lowered
+            or "machine learning" in lowered
+            or "claude" in lowered
+            or "openai" in lowered
+        )
+
     @classmethod
     def _is_relevant_to_topic(cls, title: str, summary: str, topic: str) -> bool:
         tokens = cls._topic_tokens(topic)
@@ -66,7 +107,20 @@ class ScoutAgent:
             return True
 
         haystack = f"{title} {summary}".lower()
-        return any(token in haystack for token in tokens)
+        matched_tokens = 0
+        for token in tokens:
+            variants = cls._token_variants(token)
+            if any(variant in haystack for variant in variants):
+                matched_tokens += 1
+
+        topic_mentions_ai = cls._mentions_ai(topic)
+        article_mentions_ai = cls._mentions_ai(haystack)
+
+        # For AI-focused prompts, require AI signal plus at least one topic token match.
+        if topic_mentions_ai:
+            return matched_tokens >= 1 and article_mentions_ai
+
+        return matched_tokens >= 1
 
     def _deduplicate_articles(
         self,
@@ -118,7 +172,7 @@ class ScoutAgent:
                 "Scout: filter mode v2 enabled (topic relevance + corruption screening)."
             )
 
-        results = search_news(topic=topic, max_results=6, thinking_log=thinking_log)
+        results = search_news(topic=topic, max_results=10, thinking_log=thinking_log)
         results = self._deduplicate_articles(results, thinking_log=thinking_log)
 
         curated: list[dict[str, Any]] = []
@@ -139,12 +193,11 @@ class ScoutAgent:
             if looks_corrupted_text(summary):
                 if thinking_log is not None:
                     thinking_log.append(
-                        f"Scout: removed corrupted article text from source '{source or source_url or 'unknown'}'."
+                        f"Scout: possible corruption detected but kept article from source '{source or source_url or 'unknown'}' for downstream checks."
                     )
-                continue
 
             block_reason = apply_guardrails(
-                " ".join([title, summary, image, source, source_url]),
+                " ".join([title, source, source_url]),
                 include_offensive=False,
             )
             if block_reason:
@@ -154,22 +207,27 @@ class ScoutAgent:
                     )
                 continue
 
-            curated.append(
-                {
-                    "Title": title or "Untitled",
-                    "Summary": summary or "No summary available.",
-                    "Image": image or "No image available.",
-                    "Source": source or "Unknown source",
-                    "SourceUrl": source_url,
-                    "Domain": item.get("domain", ""),
-                    "Reliability": item.get("reliability", "Low"),
-                    "ReliabilityScore": item.get("reliability_score", 1),
-                    "PublishedAt": item.get("published_at"),
-                }
-            )
+            curated.append(self._to_curated_article(item))
 
             if len(curated) == 3:
                 break
+
+        if not curated:
+            for item in results:
+                title = str(item.get("title", "")).strip()
+                summary = str(item.get("summary", "")).strip()
+                if self._mentions_ai(f"{title} {summary}"):
+                    curated.append(self._to_curated_article(item))
+                    if thinking_log is not None:
+                        thinking_log.append(
+                            "Scout: fallback activated, returning best available AI-related article."
+                        )
+                    break
+
+        if not curated and results:
+            curated.append(self._to_curated_article(results[0]))
+            if thinking_log is not None:
+                thinking_log.append("Scout: fallback activated, returning best available article.")
 
         if thinking_log is not None:
             high_confidence = sum(1 for article in curated if article.get("Reliability") == "High")

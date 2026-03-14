@@ -160,6 +160,7 @@ def _sort_by_recency(articles: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _build_query_candidates(topic: str) -> list[str]:
     """Return primary plus fallback queries for recovery when search fails or is sparse."""
     normalized = " ".join(topic.split())
+    lowered = normalized.lower()
     candidates = [normalized]
 
     if not normalized.lower().startswith("ai "):
@@ -170,6 +171,27 @@ def _build_query_candidates(topic: str) -> list[str]:
     shortened = " ".join(normalized.split()[:6])
     if shortened and shortened != normalized:
         candidates.append(shortened)
+
+    # Add geography-aware AI fallbacks for prompts like
+    # "AI developments in Malaysia" where direct phrasing can be too narrow.
+    location_match = re.search(r"\bin\s+([a-zA-Z][a-zA-Z\s-]{2,})$", normalized, flags=re.IGNORECASE)
+    if location_match:
+        location = " ".join(location_match.group(1).split())
+        candidates.extend(
+            [
+                f"AI in {location}",
+                f"{location} artificial intelligence news",
+                f"{location} AI policy",
+            ]
+        )
+
+    if "anthropic" in lowered:
+        candidates.extend(
+            [
+                "Anthropic Claude news",
+                "Anthropic AI enterprise updates",
+            ]
+        )
 
     unique_candidates: list[str] = []
     seen: set[str] = set()
