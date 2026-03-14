@@ -17,6 +17,7 @@ OFFENSIVE_TERMS = {
     "wipe out",
     "exterminate",
     "nazi scum",
+    "shithead",
 }
 
 SCRAPE_ARTIFACT_TERMS = {
