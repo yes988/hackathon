@@ -1,0 +1,97 @@
+<mxfile host="app.diagrams.net" modified="2026-03-15T00:00:00.000Z" agent="GitHub Copilot" version="24.7.17" type="device">
+  <diagram id="architecture" name="System Architecture (A2A Flow)">
+    <mxGraphModel dx="1240" dy="720" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="T" value="System Architecture Diagram (A2A Flow)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="620" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="U" value="User Input&lt;br&gt;Research Topic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="500" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="L1" value="Discovery Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="380" width="280" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="S" value="Scout Agent&lt;br&gt;News Search + Retry Recovery" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="320" y="440" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="RC" value="Retry Controller&lt;br&gt;Exponential Backoff&lt;br&gt;Failure Classification" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="320" y="560" width="200" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="L2" value="Security Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="380" width="300" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="G1" value="Source Guardrail G1&lt;br&gt;Prompt Injection Detection&lt;br&gt;Blacklist Filtering&lt;br&gt;Capability Sandbox" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="660" y="470" width="220" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="L3" value="Intelligence Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="380" width="300" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="A" value="Analyst Agent&lt;br&gt;Freshness Checks&lt;br&gt;Insight Extraction&lt;br&gt;ICP Filtering" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="470" width="220" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="L4" value="Content Generation Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="380" width="300" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="W" value="Writer Agent&lt;br&gt;Professional Briefing&lt;br&gt;Structured Intelligence Report" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="470" width="220" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="L5" value="Output Safety Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="380" width="320" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="G2" value="Final Output Guardrail G2&lt;br&gt;PII Redaction&lt;br&gt;Schema Validation&lt;br&gt;Relevancy Checks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="470" width="240" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="L6" value="Interface Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="2060" y="300" width="330" height="470" as="geometry"/>
+        </mxCell>
+        <mxCell id="UI" value="Streamlit Intelligence Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="380" width="250" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="LOG" value="Thinking Log&lt;br&gt;Agent Semantic Telemetry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="500" width="250" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="HITL" value="Human in the Loop Review" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="620" width="250" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" value="" style="endArrow=block;endFill=1;html=1;rounded=0;" edge="1" parent="1" source="U" target="S">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="" style="endArrow=block;endFill=1;html=1;rounded=0;" edge="1" parent="1" source="S" target="RC">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" value="" style="endArrow=block;endFill=1;html=1;rounded=0;" edge="1" parent="1" source="RC" target="G1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" value="" style="endArrow=block;endFill=1;html=1;rounded=0;" edge="1" parent="1" source="G1" target="A">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" value="" style="endArrow=block;endFill=1;html=1;rounded=0;" edge="1" parent="1" source="A" target="W">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" value="" style="endArrow=block;endFill=1;html=1;rounded=0;" edge="1" parent="1" source="W" target="G2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" value="" style="endArrow=block;endFill=1;html=1;rounded=0;" edge="1" parent="1" source="G2" target="UI">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e8" value="" style="endArrow=block;endFill=1;html=1;rounded=0;" edge="1" parent="1" source="UI" target="LOG">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e9" value="" style="endArrow=block;endFill=1;html=1;rounded=0;" edge="1" parent="1" source="UI" target="HITL">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,41 @@
+flowchart LR
+
+U[User Input<br>Research Topic]
+
+subgraph Discovery Layer
+S[Scout Agent<br>News Search + Retry Recovery]
+RC[Retry Controller<br>Exponential Backoff<br>Failure Classification]
+end
+
+subgraph Security Layer
+G1[Source Guardrail G1<br>Prompt Injection Detection<br>Blacklist Filtering<br>Capability Sandbox]
+end
+
+subgraph Intelligence Layer
+A[Analyst Agent<br>Freshness Checks<br>Insight Extraction<br>ICP Filtering]
+end
+
+subgraph Content Generation Layer
+W[Writer Agent<br>Professional Briefing<br>Structured Intelligence Report]
+end
+
+subgraph Output Safety Layer
+G2[Final Output Guardrail G2<br>PII Redaction<br>Schema Validation<br>Relevancy Checks]
+end
+
+subgraph Interface Layer
+UI[Streamlit Intelligence Dashboard]
+LOG[Thinking Log<br>Agent Semantic Telemetry]
+HITL[Human in the Loop Review]
+end
+
+U --> S
+S --> RC
+RC --> G1
+G1 --> A
+A --> W
+W --> G2
+G2 --> UI
+
+UI --> LOG
+UI --> HITL

@@ -28,7 +28,7 @@ flowchart LR
 	W --> G2[Final Output Guardrail]
 	G2 --> UI[Streamlit UI + Thinking Log]
 ```
-<img src="images/screenshot.png" width="400">
+<img src="img\Copy of hackathon.drawio.png" width="400">
 
 
 The diagram source is also saved in `architecture.mmd`.
