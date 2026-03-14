@@ -16,7 +16,16 @@ NOISE_PATTERNS = [
     r"\(AP Photo.*?\)",
     r"\d+\s*of\s*\d+\s*\|",
     r"FILE-.*?\)",
+    r"\[\s*\.\s*\.\s*\.\s*\]",
+    r"\[\.\s*\]",
+    r"##\s*Most viewed.*",
+    r"##\s*Support the Guardian.*",
+    r"Fund the free press.*",
+    r"Print subscriptions.*",
+    r"Privacy Policy Contact Us About us.*",
 ]
+
+_CORRUPTION_PATTERN = re.compile(r"(?:[A-Za-z0-9@#$%^&*\\\\/=+_-]{1,2}\s*){40,}")
 
 
 def clean_news_text(text: str) -> str:
@@ -64,3 +73,17 @@ def preprocess_article(text: str) -> str:
 def is_low_quality_article(text: str, min_chars: int = 300) -> bool:
     """Flag very short content that is likely too weak for analysis."""
     return len(text.strip()) < min_chars
+
+
+def looks_corrupted_text(text: str) -> bool:
+    """Detect heavily corrupted or encoded-looking text blocks."""
+    normalized = " ".join(text.split())
+    if not normalized:
+        return True
+
+    if _CORRUPTION_PATTERN.search(normalized):
+        return True
+
+    punctuation_count = sum(1 for ch in normalized if not ch.isalnum() and not ch.isspace())
+    ratio = punctuation_count / max(1, len(normalized))
+    return ratio > 0.18

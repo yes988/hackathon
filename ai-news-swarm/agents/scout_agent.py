@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from tools.guardrails import apply_guardrails
+from tools.news_cleaner import looks_corrupted_text
 from tools.search_tool import search_news
 
 
@@ -28,6 +30,17 @@ class ScoutAgent:
         "about the user's topic and return Title, Summary, Image, and Source."
     )
 
+    _GENERIC_TOPIC_TOKENS = {
+        "ai",
+        "unknown",
+        "case",
+        "incident",
+        "version",
+        "latest",
+        "news",
+        "report",
+    }
+
     @staticmethod
     def _normalized_title(title: str) -> str:
         return " ".join(title.lower().split())
@@ -36,6 +49,24 @@ class ScoutAgent:
     def _content_fingerprint(summary: str) -> str:
         normalized = " ".join(summary.lower().split())
         return normalized[:220]
+
+    @classmethod
+    def _topic_tokens(cls, topic: str) -> set[str]:
+        tokens = set(re.findall(r"[a-zA-Z0-9]+", topic.lower()))
+        return {
+            token
+            for token in tokens
+            if len(token) >= 4 and token not in cls._GENERIC_TOPIC_TOKENS
+        }
+
+    @classmethod
+    def _is_relevant_to_topic(cls, title: str, summary: str, topic: str) -> bool:
+        tokens = cls._topic_tokens(topic)
+        if not tokens:
+            return True
+
+        haystack = f"{title} {summary}".lower()
+        return any(token in haystack for token in tokens)
 
     def _deduplicate_articles(
         self,
@@ -95,6 +126,20 @@ class ScoutAgent:
             source = str(item.get("source", "")).strip()
             source_url = str(item.get("source_url", "")).strip()
 
+            if not self._is_relevant_to_topic(title, summary, topic):
+                if thinking_log is not None:
+                    thinking_log.append(
+                        f"Scout: removed off-topic article from source '{source or source_url or 'unknown'}'."
+                    )
+                continue
+
+            if looks_corrupted_text(summary):
+                if thinking_log is not None:
+                    thinking_log.append(
+                        f"Scout: removed corrupted article text from source '{source or source_url or 'unknown'}'."
+                    )
+                continue
+
             block_reason = apply_guardrails(" ".join([title, summary, image, source, source_url]))
             if block_reason:
                 if thinking_log is not None:
@@ -125,5 +170,7 @@ class ScoutAgent:
             thinking_log.append(
                 f"Scout: shortlisted {len(curated)} articles for analysis, including {high_confidence} high-reliability sources."
             )
+            if not curated:
+                thinking_log.append("Scout: no trustworthy and relevant articles passed filtering for this topic.")
 
         return curated

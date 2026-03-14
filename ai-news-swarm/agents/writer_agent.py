@@ -108,6 +108,8 @@ class WriterAgent:
         if not why_happened:
             why_happened = [insight for insight in key_insights[:2] if insight.strip()]
         why_happened = [self._limit_sentences(item, max_sentences=2) for item in self._unique_nonempty(why_happened)]
+        if not why_happened:
+            why_happened = ["Insufficient trustworthy evidence was found to infer a root cause."]
 
         source_reliability_lines = []
         seen_sources: set[str] = set()
@@ -123,6 +125,8 @@ class WriterAgent:
         unique_implications = self._unique_nonempty([str(item) for item in key_insights])
         for idx, insight in enumerate(unique_implications[:3], start=1):
             implication_lines.append(f"{idx}. {insight}")
+        if not implication_lines:
+            implication_lines.append("1. No validated strategic implications are available from the current source set.")
 
         assessment_lines = []
         if stats["articles_found"]:
