@@ -114,6 +114,9 @@ class ScoutAgent:
         """Fetch and return top 3 guarded articles for a topic."""
         if thinking_log is not None:
             thinking_log.append(f"Scout: starting research for topic '{topic}'.")
+            thinking_log.append(
+                "Scout: filter mode v2 enabled (topic relevance + corruption screening)."
+            )
 
         results = search_news(topic=topic, max_results=6, thinking_log=thinking_log)
         results = self._deduplicate_articles(results, thinking_log=thinking_log)
